@@ -57,7 +57,7 @@ jobs:
     defaults:
       run:
         working-directory: terraform
-    name: Deploy Site
+    name: Terraform
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
@@ -79,3 +79,21 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
         continue-on-error: false
+
+  deploy:
+    name: Terraform
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to S3 bucket
+        run: aws s3 sync ./dist/ s3://model-ui-website --delete
