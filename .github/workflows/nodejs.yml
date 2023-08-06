@@ -73,7 +73,7 @@ jobs:
 
       - name: Deploy to S3 bucket
         run: aws s3 sync ./dist/ s3://model-ui-website --delete
-    
+
   release:
     name: Release
     runs-on: ubuntu-latest
