@@ -43,6 +43,9 @@
     "vitest": "^0.34.1"
   },
   "release": {
-    "branches": ["main", "next"]
+    "branches": [
+      "main",
+      "next"
+    ]
   }
 }
