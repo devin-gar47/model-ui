@@ -6,13 +6,13 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
   plugins: [react()],
   test: {
-    include: ['**/*.test.tsx'],
+    include: ["**/*.test.tsx"],
     globals: true,
     coverage: {
       all: true,
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.tsx']
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["src/**/*.tsx"],
     },
   },
 });
