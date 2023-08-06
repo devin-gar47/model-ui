@@ -50,6 +50,9 @@ jobs:
         run: npx semantic-release
 
   apply:
+    defaults:
+      run:
+        working-directory: terraform
     name: Deploy Site
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
