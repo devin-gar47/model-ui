@@ -52,6 +52,7 @@ jobs:
   apply:
     name: Deploy Site
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v1
