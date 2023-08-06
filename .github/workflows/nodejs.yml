@@ -10,48 +10,19 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
-  # build:
-  #   name: Build & Test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Build
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
-  #         cache: "npm"
-  #     - run: npm ci
-  #     - run: npm run build --if-present
-  #     - run: npm run test
-
-  # release:
-  #   name: Release
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: build
-  #   permissions:
-  #     contents: write
-  #     issues: write
-  #     pull-requests: write
-  #     id-token: write
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: "lts/*"
-  #     - name: Install dependencies
-  #       run: npm ci
-  #     - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-  #       run: npm audit signatures
-  #     - name: Release
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-  #       run: npx semantic-release
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm run test
 
   apply:
     defaults:
@@ -59,6 +30,7 @@ jobs:
         working-directory: terraform
     name: Terraform
     runs-on: ubuntu-latest
+    needs: build
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Repo
@@ -83,6 +55,7 @@ jobs:
   deploy:
     name: Terraform
     runs-on: ubuntu-latest
+    needs: apply
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Repo
@@ -100,3 +73,32 @@ jobs:
 
       - name: Deploy to S3 bucket
         run: aws s3 sync ./dist/ s3://model-ui-website --delete
+    
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: deploy
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
+        run: npm audit signatures
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
